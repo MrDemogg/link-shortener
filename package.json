@@ -20,6 +20,7 @@
     "@types/react-redux": "^7.1.24",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "mongodb": "4.12",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.5",
