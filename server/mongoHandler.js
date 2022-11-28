@@ -4,7 +4,6 @@ const client = new MongoClient('mongodb://localhost:27017')
 
 const mongoHandler = {
   createShortLink: async (url, res) => {
-    console.log('create')
     try {
       const shortLinkGenerator = () => {
         const values = 'abcdefghigklmnopqrstuvwxzABCDEFGHIGKLMNOPQRSTUVWXYZ'
@@ -15,14 +14,19 @@ const mongoHandler = {
         return link
       }
       await client.connect()
-      console.log('started')
       const links = client.db().collection('links')
-      let shortLink = shortLinkGenerator()
-      console.log('inserting')
-      await links.insertOne({_id: new ObjectId(), shortUrl: shortLink, originalUrl: url})
+      let shortLink
+      if (await links.findOne({originalUrl: url}) === null) {
+        shortLink = shortLinkGenerator()
+        await links.insertOne({_id: new ObjectId(), shortUrl: shortLink, originalUrl: url})
+      } else {
+        await links.findOne({originalUrl: url}).then(res => {
+          shortLink = res.shortUrl
+        })
+      }
       res.status(202).send('http://localhost:8000/' + shortLink)
     } catch (e) {
-      console.log(e)
+      res.status(500).send('Неожиданная ошибка, повторите позже :(')
     }
   },
   readShortLink: async (shortUrl, res) => {
@@ -36,7 +40,7 @@ const mongoHandler = {
         res.status(404).send('Link not found')
       }
     } catch (e) {
-      console.log(e)
+      res.status(500).send('Неожиданная ошибка, повторите позже :(')
     }
   }
 }
